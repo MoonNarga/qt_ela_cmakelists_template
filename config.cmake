@@ -1,3 +1,7 @@
+# for qt5_add_big_resources
+set(QRC "C:/Users/MoonN/Workspace/Repos/ElaWidgetTools/src/include/ElaWidgetTools.qrc")
+
+
 set(INCLUDE_DIRS
         "C:/Users/MoonN/Workspace/Repos/ElaWidgetTools/src/include"
 )
@@ -63,6 +67,3 @@ foreach(LIB_FILE IN LISTS ALL_LIB_FILES)
     endif()
 
 endforeach()
-
-# for qt5_add_big_resources
-set(QRC "C:/Users/MoonN/Workspace/Repos/ElaWidgetTools/src/include/ElaWidgetTools.qrc")

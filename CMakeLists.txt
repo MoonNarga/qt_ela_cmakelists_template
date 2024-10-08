@@ -10,6 +10,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
+set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
+
 find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 message(STATUS "QT_DIR: ${QT_DIR}")
@@ -73,7 +75,7 @@ include_directories(
         src
         src/ModelView
 )
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
 
 target_link_libraries(NewLaser PRIVATE
         Qt${QT_VERSION_MAJOR}::Widgets
@@ -97,22 +99,24 @@ set_target_properties(NewLaser PROPERTIES
 
 # copy 3rd party dlls
 add_custom_command(TARGET NewLaser POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_RUNTIME_DLLS:NewLaser>
-        $<TARGET_FILE_DIR:NewLaser>
-        COMMENT "Target Runtime DLLs copied to $<TARGET_FILE_DIR:NewLaser>"
-        COMMAND_EXPAND_LISTS
+       COMMAND ${CMAKE_COMMAND} -E copy_if_different
+       $<TARGET_RUNTIME_DLLS:NewLaser>
+       $<TARGET_FILE_DIR:NewLaser>
+       COMMENT "Target Runtime DLLs copied to $<TARGET_FILE_DIR:NewLaser>"
+       COMMAND_EXPAND_LISTS
 )
 
 # deploy Qt runtime dependencies with windeployqt
 if (WIN32)
-    add_custom_command(TARGET NewLaser POST_BUILD
-            COMMAND "${QT_DIR}/../../../bin/windeployqt.exe" $<$<CONFIG:Debug>:--debug> $<$<CONFIG:Release>:--release> "$<TARGET_FILE:NewLaser>"
-            COMMENT "Deploying Qt runtime dependencies with windeployqt"
-    )
+   add_custom_command(TARGET NewLaser POST_BUILD
+           COMMAND "${QT_DIR}/../../../bin/windeployqt.exe" $<$<CONFIG:Debug>:--debug> $<$<CONFIG:Release>:--release> "$<TARGET_FILE:NewLaser>"
+           COMMENT "Deploying Qt runtime dependencies with windeployqt"
+   )
+   install(CODE "execute_process(COMMAND ${QT_DIR}/../../../bin/windeployqt.exe --dir ${CMAKE_INSTALL_PREFIX}/bin $<TARGET_FILE:NewLaser>)")
 endif ()
 
 include(GNUInstallDirs)
+install(FILES $<TARGET_RUNTIME_DLLS:NewLaser> TYPE BIN)
 install(TARGETS NewLaser
         BUNDLE DESTINATION .
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
